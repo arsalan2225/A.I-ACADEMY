@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduAI Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .ai-assistant {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .chat-interface {
+            padding: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+
+        .user-message {
+            background: #3498db;
+            color: white;
+            margin-left: auto;
+        }
+
+        .ai-message {
+            background: #ecf0f1;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #34495e;
+        }
+
+        .tools {
+            padding: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .tool-button {
+            padding: 15px;
+            text-align: center;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .tool-button:hover {
+            background: #e9ecef;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="ai-assistant">
+            <div class="header">
+                <h1>AiCADEMY Assistant</h1>
+                <p>Your Personal Learning Companion</p>
+            </div>
+
+            <div class="features">
+                <div class="feature-card" onclick="setMode('tutor')">
+                    <h3>AI Tutor</h3>
+                    <p>Get personalized explanations and help with your studies</p>
+                </div>
+                <div class="feature-card" onclick="setMode('quiz')">
+                    <h3>Quiz Generator</h3>
+                    <p>Create custom quizzes for any subject</p>
+                </div>
+                <div class="feature-card" onclick="setMode('notes')">
+                    <h3>Study Notes</h3>
+                    <p>Generate summaries and study materials</p>
+                </div>
+            </div>
+
+            <div class="chat-interface">
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Messages will appear here -->
+                </div>
+                <div class="input-area">
+                    <input type="text" id="userInput" placeholder="Ask your question...">
+                    <button onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+
+            <div class="tools">
+                <h3>Quick Tools</h3>
+                <div class="tool-grid">
+                    <div class="tool-button" onclick="generatePracticeProblems()">Practice Problems</div>
+                    <div class="tool-button" onclick="generateFlashcards()">Flashcards</div>
+                    <div class="tool-button" onclick="startStudyTimer()">Study Timer</div>
+                    <div class="tool-button" onclick="showProgress()">Progress Tracker</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'tutor';
+        let studyTimer = null;
+
+        // Initialize with welcome message
+        window.onload = function() {
+            addMessage("Hello! I'm your AI learning assistant. How can I help you today?", 'ai');
+        };
+
+        function setMode(mode) {
+            currentMode = mode;
+            const modeMessages = {
+                'tutor': "I'm now in tutor mode. What subject would you like help with?",
+                'quiz': "I can create a quiz for you. What topic should it cover?",
+                'notes': "I'll help you create study notes. What topic are you studying?"
+            };
+            addMessage(modeMessages[mode], 'ai');
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addMessage(message, 'user');
+                input.value = '';
+                
+                // Simulate AI response based on mode
+                setTimeout(() => {
+                    const responses = {
+                        'tutor': generateTutorResponse(message),
+                        'quiz': generateQuizResponse(message),
+                        'notes': generateNotesResponse(message)
+                    };
+                    addMessage(responses[currentMode], 'ai');
+                }, 1000);
+            }
+        }
+
+        function addMessage(text, sender) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.textContent = text;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function generateTutorResponse(message) {
+            // Simulate AI tutor responses
+            const responses = [
+                "Let me explain this concept step by step...",
+                "That's a great question! Here's how we can approach it...",
+                "I understand you're asking about... Let me help you understand it better.",
+                "Here's a helpful analogy to understand this concept..."
+            ];
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        function generateQuizResponse(message) {
+            return "I've created a quiz based on " + message + ". Would you like to start with multiple choice or open-ended questions?";
+        }
+
+        function generateNotesResponse(message) {
+            return "I've generated study notes for " + message + ". Let's break down the key concepts...";
+        }
+
+        function generatePracticeProblems() {
+            addMessage("I can create practice problems for you. What topic would you like to practice?", 'ai');
+        }
+
+        function generateFlashcards() {
+            addMessage("Let's create some flashcards. What subject are we studying?", 'ai');
+        }
+
+        function startStudyTimer() {
+            if (!studyTimer) {
+                addMessage("Study timer started! I'll remind you to take a break in 25 minutes.", 'ai');
+                studyTimer = setTimeout(() => {
+                    addMessage("Time for a 5-minute break! Remember to stretch and rest your eyes.", 'ai');
+                    studyTimer = null;
+                }, 25 * 60 * 1000);
+            } else {
+                addMessage("A study timer is already running.", 'ai');
+            }
+        }
+
+        function showProgress() {
+            addMessage("Here's a summary of your recent learning activities and progress...", 'ai');
+        }
+
+        // Add event listener for Enter key
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
